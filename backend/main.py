@@ -4,6 +4,7 @@ import uuid
 from io import BytesIO
 from pypdf import PdfReader
 from pydantic import BaseModel
+from text_chunking import chunk
 
 
 #************************************************************************************************#
@@ -49,7 +50,7 @@ def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> dict:
 
     full_text = "\n\n".join(pages_text)
     no_pages = len(reader.pages)
-    no_chars = len(full_text) #includes line breaks
+    no_chars = len(full_text)
 
     if no_chars == 0:
         raise PDFExtractionError("No text could be extracted from the PDF (possibly image only)")
@@ -106,6 +107,9 @@ async def ingest_pdf(pdf_file: UploadFile = File(...)):
 
     # build preview
     full_text = result["full_text"]
+    CHUNK_SIZE = 500
+    CHUNK_OVERLAP = 100
+    chunks = chunk(full_text, CHUNK_SIZE, CHUNK_OVERLAP)
     preview_len = 300
     preview = full_text[:preview_len]
 
