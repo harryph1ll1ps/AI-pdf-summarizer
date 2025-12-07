@@ -5,6 +5,7 @@ from io import BytesIO
 from pypdf import PdfReader
 from pydantic import BaseModel
 from text_chunking import chunk
+from embeddings import embed_texts
 
 
 #************************************************************************************************#
@@ -71,7 +72,6 @@ class PDFIngestResponse(BaseModel):
     chars: int
     preview: str
 
-
 #************************************************************************************************#
 #************************************************************************************************#
 
@@ -110,6 +110,8 @@ async def ingest_pdf(pdf_file: UploadFile = File(...)):
     CHUNK_SIZE = 500
     CHUNK_OVERLAP = 100
     chunks = chunk(full_text, CHUNK_SIZE, CHUNK_OVERLAP)
+    embeddings = embed_texts(chunks)
+    
     preview_len = 300
     preview = full_text[:preview_len]
 
@@ -140,17 +142,7 @@ async def ingest_pdf(pdf_file: UploadFile = File(...)):
 #     for f in files:
 #         sizes.append(len(await f.read()))
 #     return {"sizes": sizes}
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 # from pydantic import BaseModel
 
