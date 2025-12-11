@@ -62,13 +62,9 @@ def _get_collection():
 # Public API          #
 # ===================#
 
-def add_document(
-    session_id: str,
-    chunks: List[str],
-    embeddings: List[List[float]],
-) -> None:
+def add_document(session_id: str, chunks: List[str], embeddings: List[List[float]]) -> None:
     """
-    Add a document's chunks and embeddings to the vector store.
+    Add a document's chunks and embeddings to the vector store. Ensures that the index's align.
 
     Each chunk is stored with:
     - id: f"{session_id}_{chunk_index}:
@@ -117,46 +113,43 @@ def add_document(
     except Exception as e:
         raise VectorStoreError(f"Failed to add document to vector store: {e}")
     
-    def query_document(
-        session_id: str,
-        query_embedding: List[float],
-        n_results: int = 5,
-    ) -> Dict[str, Any]:
-        """
-        Query the vector store for the most similar chunks within a given session.
+def query_document(session_id: str,query_embedding: List[float],n_results: int = 5) -> Dict[str, Any]:
+    """
+    Query the vector store for the most similar chunks within a given session.
 
-        Args:
-            session_id (str): ID of the document/session to search within.
-            query_embedding (List[float]): Embedding vector for the query.
-            n_results (int): Number of top results to retreive.
+    Args:
+        session_id (str): ID of the document/session to search within.
+        query_embedding (List[float]): Embedding vector for the query.
+        n_results (int): Number of top results to retreive.
 
-        Returns:
-            Dict[str, any]: A dictionary with keys such as "documents", "metadata", etc.
+    Returns:
+        Dict[str, any]: A dictionary with keys such as "documents", "metadata", etc.
 
-        Raises:
-            VectorStore Error: If the query fails 
-        """
-        if not session_id or not isinstance(session_id, str):
-            raise VectorStoreError("session_id must be a non-empty string")
-        
-        if not isinstance(query_embedding, list) or len(query_embedding) == 0:
-            raise VectorStoreError("query_embedding must be a non-empty list of floats")
-        
-        if n_results <= 0:
-            raise VectorStoreError("n_results must be > 0")
-        
-        collection = _get_collection()
+    Raises:
+        VectorStore Error: If the query fails 
+    """
+    if not session_id or not isinstance(session_id, str):
+        raise VectorStoreError("session_id must be a non-empty string")
+    
+    if not isinstance(query_embedding, list) or len(query_embedding) == 0:
+        raise VectorStoreError("query_embedding must be a non-empty list of floats")
+    
+    if n_results <= 0:
+        raise VectorStoreError("n_results must be > 0")
+    
+    collection = _get_collection()
 
-        try:
-            results = collection.query(
-                query_embeddings = [query_embedding],
-                n_results = n_results,
-                where={"session_id": session_id},
-            )
-        except Exception as e:
-            raise VectorStoreError(f"Failed to query vector store: {e}")
-        
-        return results
+    # ChromaDBs .query() method and returns the matched chunks + metadata
+    try:
+        results = collection.query(
+            query_embeddings = [query_embedding], #Chroma expects a list of embedding vectors, even if there's only one query.
+            n_results = n_results,
+            where={"session_id": session_id},
+        )
+    except Exception as e:
+        raise VectorStoreError(f"Failed to query vector store: {e}")
+    
+    return results
     
 
 

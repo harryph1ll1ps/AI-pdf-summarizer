@@ -39,18 +39,22 @@ def embed_text(text: str) -> List[float]:
         raise EmbeddingError("Cannot embed empty text")
 
     try:
-        resp = ollama.embeddings(
+        resp = ollama.embed(
             model = EMBEDDING_MODEL,
-            prompt=normalised
+            input=normalised
         )
     except Exception as e:
         raise EmbeddingError(f"Failed to get embedding from Ollama: {e}")
     
-    embedding = resp.get("embedding")
-    if embedding is None:
-        raise EmbeddingError("No 'embedding' field returned by Ollama")
+    # resp is returned as a dictionary with keys such as model, prompt, embeddings
+    # { "embeddings": [ [0.1, 0.2, ... ] ] }
+    embeddings_list = resp.get("embeddings")
+    if embeddings_list is None or len(embeddings_list) == 0:
+        raise EmbeddingError("Ollama did not return embeddings")
     
-    return embedding
+    # return a vector where each number in the vector represents the texts' location in a dimension: 
+    # e.g. [0.2, 0.8] means x = 0.2, y = 0.8 <- however there are 768 dimensions (e.g. technicality, similarity, etc.) 
+    return embeddings_list[0]
 
 
 def embed_texts(texts: List[str]) -> List[List[float]]:

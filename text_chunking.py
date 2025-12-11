@@ -122,7 +122,7 @@ if __name__ == "__main__":
     print("-" * 70)
 
     # ---------------------------------------------------
-    # Test 6: Edge case – chunk_size smaller than text, but small overlap
+    # Test 6: Edge case : chunk_size smaller than text, but small overlap
     # ---------------------------------------------------
     text6 = " ".join([f"alpha{i}" for i in range(60)])
     chunks6 = chunk(text6, CHUNK_SIZE=15, CHUNK_OVERLAP=2)
