@@ -9,6 +9,7 @@ This module provides:
 
 from typing import List
 import ollama
+from backend.config import MAX_CHUNK_CHARS
 
 EMBEDDING_MODEL = "nomic-embed-text"
 
@@ -18,7 +19,7 @@ class EmbeddingError(Exception):
 
 def embed_text(text: str) -> List[float]:
     """
-    Generate an embedding vector for a single text string.
+    Generate an embedding vector for a single text string (a chunk).
 
     Args:
         text (str): Input text to embed.
@@ -37,6 +38,9 @@ def embed_text(text: str) -> List[float]:
     normalised = " ".join(text.split())
     if not normalised:
         raise EmbeddingError("Cannot embed empty text")
+    
+    if len(normalised) > MAX_CHUNK_CHARS:
+        raise EmbeddingError(f"Chunk too large to embed ({len(normalised)} chars)")
 
     try:
         resp = ollama.embed(
@@ -84,9 +88,12 @@ def embed_texts(texts: List[str]) -> List[List[float]]:
             emb = embed_text(text)
             embeddings.append(emb)
         except EmbeddingError as e:
-            # can skip or fail fast; for v0, fail fast:
-            raise EmbeddingError(f"Failed to embed text at index {i}")
-        
+            print(f"[WARNING] Skipping chunk {i}: {e}")
+            continue
+    
+    if not embeddings:
+        raise EmbeddingError("No chunks could be embedded successfully")
+    
     return embeddings
 
 

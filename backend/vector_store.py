@@ -39,7 +39,6 @@ def _get_chroma_client() -> chromadb.Client:
 
     client = chromadb.Client(
         Settings(
-            chroma_db_impl = "duckdb+parquet",
             persist_directory = PERSIST_DIRECTORY,
         )
     )
@@ -112,6 +111,8 @@ def add_document(session_id: str, chunks: List[str], embeddings: List[List[float
         )
     except Exception as e:
         raise VectorStoreError(f"Failed to add document to vector store: {e}")
+    
+    print("collection count:", collection.count())
     
 def query_document(session_id: str,query_embedding: List[float],n_results: int = 5) -> Dict[str, Any]:
     """

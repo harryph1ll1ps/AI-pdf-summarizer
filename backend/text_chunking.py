@@ -1,3 +1,5 @@
+from backend.config import MAX_CHUNK_CHARS
+
 def chunk(text: str, CHUNK_SIZE: int, CHUNK_OVERLAP: int) -> list[str]:
     """
     Split large text into overlapping word-based chunks.
@@ -46,7 +48,12 @@ def chunk(text: str, CHUNK_SIZE: int, CHUNK_OVERLAP: int) -> list[str]:
             break
         
         chunk_text = " ".join(chunk_words).strip()
+
         if chunk_text:
+            # ensure that the number of characters is below the ollama threshold
+            if len(chunk_text) > MAX_CHUNK_CHARS:
+                chunk_text = chunk_text[:MAX_CHUNK_CHARS]
+
             chunks.append(chunk_text)
 
         start += step

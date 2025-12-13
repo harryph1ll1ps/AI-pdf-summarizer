@@ -3,17 +3,11 @@ import uuid
 from io import BytesIO
 from pypdf import PdfReader
 from pydantic import BaseModel
-from text_chunking import chunk
-from embeddings import embed_text, embed_texts
-from vector_store import add_document, query_document, VectorStoreError
 import ollama
-
-# ============================================================
-# ========================== CONFIG ===========================
-# ============================================================
-CHUNK_SIZE = 500
-CHUNK_OVERLAP = 100
-
+from backend.text_chunking import chunk
+from backend.embeddings import embed_text, embed_texts
+from backend.vector_store import add_document, query_document, VectorStoreError
+from backend.config import CHUNK_SIZE, CHUNK_OVERLAP, MAX_CHUNK_CHARS
 
 # ============================================================
 # ==================== CLASSES & FUNCTIONS ====================
@@ -192,7 +186,7 @@ async def ask_pdf(request: AskRequest):
     
     # build context string
     context_parts = []
-    sources: list[SourceChunk]
+    sources: list[SourceChunk] = []
 
     for doc, meta in zip(docs, metas):
         idx = meta.get("chunk_index")
