@@ -17,6 +17,7 @@ from chromadb.config import Settings
 # ===================#
 # Configuration      #
 # ===================#
+
 PERSIST_DIRECTORY = "./chroma_db"
 COLLECTION_NAME = "pdf_chunks"
 
@@ -27,9 +28,9 @@ class VectorStoreError(Exception):
     pass
 
 
-# ===================#
+# ====================#
 # Client / Collection #
-# ===================#
+# ====================#
 
 def _get_chroma_client() -> chromadb.Client:
     """
@@ -58,7 +59,7 @@ def _get_collection():
 
 
 # ===================#
-# Public API          #
+# Public API         #
 # ===================#
 
 def add_document(session_id: str, chunks: List[str], embeddings: List[List[float]]) -> None:
@@ -114,7 +115,7 @@ def add_document(session_id: str, chunks: List[str], embeddings: List[List[float
     
     print("collection count:", collection.count())
     
-def query_document(session_id: str,query_embedding: List[float],n_results: int = 5) -> Dict[str, Any]:
+def query_document(session_id: str, query_embedding: List[float], n_results: int = 5) -> Dict[str, Any]:
     """
     Query the vector store for the most similar chunks within a given session.
 
@@ -143,7 +144,7 @@ def query_document(session_id: str,query_embedding: List[float],n_results: int =
     # ChromaDBs .query() method and returns the matched chunks + metadata
     try:
         results = collection.query(
-            query_embeddings = [query_embedding], #Chroma expects a list of embedding vectors, even if there's only one query.
+            query_embeddings = [query_embedding], #Chroma expects a list of embedding vectors (lists), even if there's only one query.
             n_results = n_results,
             where={"session_id": session_id},
         )

@@ -178,6 +178,7 @@ async def ask_pdf(request: AskRequest):
 
     # chroma returns list of lists (one per query); we only have one query <- hence index 0
     # each query returns a dict with 'embeddings', 'documents', 'metadatas' as keys, each of which has a [[]] value
+    # Output: docs  = ["chunk A text", "chunk B text"] and metas = [{"chunk_index": 3}, {"chunk_index": 7}]
     docs = results.get("documents", [[]])[0] #dict.get(key, default_value)
     metas = results.get("metadatas", [[]])[0]
 
@@ -188,7 +189,7 @@ async def ask_pdf(request: AskRequest):
     context_parts = []
     sources: list[SourceChunk] = []
 
-    for doc, meta in zip(docs, metas):
+    for doc, meta in zip(docs, metas): # using zip gives you ("chunk A text", {"chunk_index": 3})
         idx = meta.get("chunk_index")
         context_parts.append(doc)
         sources.append(SourceChunk(chunk_index=idx, text=doc))
@@ -213,78 +214,17 @@ async def ask_pdf(request: AskRequest):
     # call local LLM via Ollama
     try:
         resp = ollama.chat(
-            model="llama3",
-            messages=[{"role": "user", "content": prompt}]
+            model="llama3.2:3b",
+            messages=[{"role": "user", "content": prompt}],
+            options={"num_predict": 128, "temperature": 0.2}
         )
 
         answer_text = resp["message"]["content"]
 
     except Exception as e: 
-        HTTPException(status_code=500, detail=f"Failed to generate answer with LLM: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate answer with LLM: {e}")
 
     return AskResponse(
         answer=answer_text,
         sources=sources
     )
-    
-
-
-
-
-
-
-
-
-
-
-
-# @app.get("/")
-# def root():
-#     return ""
-
-# @app.get("/health")
-# def health_check():
-#     return {"status": "ok"}
-
-
-# @app.post("/upload")
-# async def upload(files: list[UploadFile] = File(...)):
-#     sizes = []
-#     for f in files:
-#         sizes.append(len(await f.read()))
-#     return {"sizes": sizes}
- 
-
-# from pydantic import BaseModel
-
-# app = FastAPI()
-
-# class Item(BaseModel):
-#     text: str = None
-#     is_done: bool = False
-
-# items = []
-
-# @app.get("/")
-# def root():
-#     return {"Hello": "World"}
-
-
-# @app.get("/items", response_model=list[Item])
-# def list_items(limit: int = 10):
-#     return items[0:limit]
-
-# @app.post("/items")
-# def create_item(item: Item):
-#     items.append(item)
-#     return items
-
-# @app.get("/items/{item_id}", response_model = Item)
-# def get_item(item_id: int) -> Item:
-#     if item_id < len(items):
-#         item = items[item_id]
-
-#     else:
-#         raise HTTPException(status_code=404, detail=f"Item {item_id} not found")
-
-#     return item

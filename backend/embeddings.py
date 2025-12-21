@@ -84,13 +84,9 @@ def embed_texts(texts: List[str]) -> List[List[float]]:
     embeddings: List[List[float]] = []
 
     for i, text in enumerate(texts):
-        try:
-            emb = embed_text(text)
-            embeddings.append(emb)
-        except EmbeddingError as e:
-            print(f"[WARNING] Skipping chunk {i}: {e}")
-            continue
-    
+        embeddings.append(embed_text(text))
+
+
     if not embeddings:
         raise EmbeddingError("No chunks could be embedded successfully")
     
