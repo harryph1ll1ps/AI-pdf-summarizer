@@ -1,13 +1,17 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Request
 import uuid
 from pydantic import BaseModel
 import ollama
 from backend.text_chunking import chunk
 from backend.embeddings import embed_text, embed_texts
-from backend.vector_store import add_document, query_document, VectorStoreError
+from backend.vector_store import add_document, query_document, VectorStoreError, _get_collection
 from backend.config import CHUNK_SIZE, CHUNK_OVERLAP, MAX_CHUNK_CHARS
 from backend.text_extraction import PDFExtractionError, extract_text_from_pdf_bytes
 from backend.summariser import summarise_doc
+from fastapi.responses import HTMLResponse
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 # ============================================================
 # ==================== CLASSES & FUNCTIONS ====================
@@ -38,6 +42,18 @@ class AskResponse(BaseModel):
 # ============================================================
 
 app = FastAPI()
+
+# Serve frontend static assets (CSS, JavaScript, images) from /static/*
+# Requests to /static/... are mapped to files in frontend/static/
+app.mount(
+    "/static",
+    StaticFiles(directory="frontend/static"),
+    name="static"
+)
+
+# Jinja2 is used to render HTML templates for the frontend UI
+templates = Jinja2Templates(directory="frontend/templates")
+
 
 @app.post("/ingest", response_model=PDFIngestResponse)
 async def ingest_pdf(pdf_file: UploadFile = File(...)):
@@ -182,4 +198,47 @@ async def ask_pdf(request: AskRequest):
     return AskResponse(
         answer=answer_text,
         sources=sources
+    )
+
+
+@app.get("/health")
+async def health_check():
+    status = {
+        "api":"ok",
+        "ollama": "unknown",
+        "vector_store": "unknown"
+    }
+
+    overall = "ok"
+
+    # check ollama (cheap call)
+    try:
+        ollama.embed(model="llama3.2:3b", input="health check")
+        status["ollama"] = "ok"
+
+    except Exception:
+        status["ollama"] = "down"
+        overall = "degraded"
+
+    # check vector store
+    try:
+        col = _get_collection()
+        _ = col.count()
+        status["vector_store"] = "ok"
+
+    except Exception:
+        status["vector_store"] = "down"
+        overall = "degraded"
+
+    return {
+        "status": overall,
+        "components": status
+    }
+
+
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request}
     )
