@@ -113,7 +113,7 @@ def add_document(session_id: str, chunks: List[str], embeddings: List[List[float
     except Exception as e:
         raise VectorStoreError(f"Failed to add document to vector store: {e}")
     
-    print("collection count:", collection.count())
+    print("collection count (add doc):", collection.count())
     
 def query_document(session_id: str, query_embedding: List[float], n_results: int = 5) -> Dict[str, Any]:
     """
@@ -150,7 +150,9 @@ def query_document(session_id: str, query_embedding: List[float], n_results: int
         )
     except Exception as e:
         raise VectorStoreError(f"Failed to query vector store: {e}")
-    
+
+    print("collection count (query doc):", collection.count())
+
     return results
     
 
