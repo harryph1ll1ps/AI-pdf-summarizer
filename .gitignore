@@ -1,26 +1,56 @@
-# Python cache
+# =========================
+# Python
+# =========================
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.so
 
 # Virtual environments
-venv/
 .venv/
+venv/
 env/
-.env/
+ENV/
 
-# Editor / IDE settings
+# Environment variables
+.env
+.env.*
+
+# =========================
+# OS / System files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# ChromaDB persistence
+# =========================
+chroma_db/
+
+# =========================
+# Editor / IDE
+# =========================
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# macOS system files
-.DS_Store
-
-# Local databases / vector stores
-chroma_db/
-*.sqlite3
-
-# Logs
+# =========================
+# Logs / caches
+# =========================
 *.log
+.cache/
 
+# =========================
+# Build / test artifacts
+# =========================
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+
+# =========================
+# Frontend (optional)
+# =========================
+node_modules/

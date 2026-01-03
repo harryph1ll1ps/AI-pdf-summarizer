@@ -1,6 +1,7 @@
 //----------- FUNCTIONS ------------//
 
 function handleIngestSuccess(data) {
+    uploadButton.disabled = false;
     currentSessionId = data.session_id; // connects the current webpage to that document
     uploadStatus.textContent = "PDF processed successfully.";
     uploadStatus.style.color = "green";
@@ -23,6 +24,7 @@ function handleIngestSuccess(data) {
 
 
 function handleAskSuccess(data) {
+    askButton.disabled = false;
     askStatus.textContent = "";
 
     const answerSection = document.getElementById("answer-section");
@@ -37,7 +39,8 @@ function handleAskSuccess(data) {
     data.sources.forEach((src) => {
         const div = document.createElement("div");
         div.className = "source";
-        div.textContent = `chunk ${src.chunk_index}: ${src.text}`;
+        const preview = src.text.length > 300 ? src.text.slice(0,300) + "..." : src.text;
+        div.textContent = `chunk ${src.chunk_index}: ${preview}`;
         sourcesContainer.appendChild(div);
     });
 
@@ -53,6 +56,7 @@ let currentSessionId = null;
 // finds html elements by their id and stores them
 const uploadForm = document.getElementById("upload-form"); // document represents the entire html page loaded by the browser
 const uploadStatus = document.getElementById("upload-status");
+const uploadButton = uploadForm.querySelector("button");
 
 // listens for when a form gets submitted
 uploadForm.addEventListener("submit", async (event) => {
@@ -60,6 +64,7 @@ uploadForm.addEventListener("submit", async (event) => {
 
     uploadStatus.textContent = "Uploading and processing PDF...";
     uploadStatus.style.color = "#555";
+    uploadButton.disabled = true;
 
     const fileInput = document.getElementById("pdf-file");
     if (!fileInput.files.length) {
@@ -90,6 +95,7 @@ uploadForm.addEventListener("submit", async (event) => {
         handleIngestSuccess(data);
 
     }   catch (err) {
+        uploadButton.disabled = false;
         uploadStatus.textContent = err.message;
         uploadStatus.style.color = "red";
     }
@@ -100,6 +106,7 @@ uploadForm.addEventListener("submit", async (event) => {
 // handling the ask path
 const askForm = document.getElementById("ask-form");
 const askStatus = document.getElementById("ask-status");
+const askButton = askForm.querySelector("button");
 
 askForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -122,6 +129,15 @@ askForm.addEventListener("submit", async (event) => {
     askStatus.textContent = "Thinking...";
     askStatus.style.color = "#555";
 
+    // hide old answer while thinking
+    document.getElementById("answer-section").style.display = "none";
+
+    // disable the button to prevent multiple requests
+    askButton.disabled = true; 
+
+    // clear text while waiting for new response
+    document.getElementById("answer-section").style.display = "none"; 
+
     try {
         const response = await fetch("/ask", {
             method: "POST",
@@ -143,6 +159,7 @@ askForm.addEventListener("submit", async (event) => {
     } catch (err) {
         askStatus.textContent = err.message;
         askStatus.style.color = "red";
+        askForm.querySelector("button").disabled = false;
     }
 });
 
