@@ -47,6 +47,35 @@
         <div class="meta" id="document-meta"></div>
         </section>
 
+        <!-- Ask section -->
+         <section class="card" id="ask-section" style="display: none;">
+            <h2>Ask a Question</h2>
+
+            <form id="ask-form">
+                <label for="question-input">Your question</label>
+                <input
+                    type="text"
+                    id="question-input"
+                    placeholder="Ask something about the document..."
+                    required
+                />
+
+                <button type="submit">Ask</button>
+            </form>
+
+            <div id ="ask-status"></div>
+         </section>
+
+
+        <!-- Answer Section -->
+         <section class="card" id="answer-section" style="display: none;">
+            <h2>Answer</h2>
+            <p id="answer-text"></p>
+
+            <div id="sources-container"></div>
+         </section>
+        
+
     </main>
 
     <script src="/static/app.js"></script>
