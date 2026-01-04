@@ -75,7 +75,8 @@ Limitations
 
 Future improvements
 -------------------
-- Highlight sources in the UI
+- Improved UI
+- Improve model prompting
 - Stream model responses
 - Support additional file types (DOCX/TXT)
 - Multi-document search and saved sessions
